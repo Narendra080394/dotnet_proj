@@ -1,0 +1,40 @@
+trigger:
+- main # Trigger pipeline on commits to the 'main' branch
+
+pool:
+  vmImage: 'windows-latest' # Use a Windows-based agent
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Install .NET SDK'
+  inputs:
+    version: '6.x' # Specify the .NET SDK version
+
+- task: NuGetToolInstaller@1
+  displayName: 'Install NuGet'
+
+- task: NuGetCommand@2
+  displayName: 'NuGet restore'
+  inputs:
+    command: 'restore'
+    restoreSolution: '**/*.sln' # Restore packages for all solutions
+
+- task: VSBuild@1
+  displayName: 'Build solution'
+  inputs:
+    solution: '**/*.sln'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip"'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+
+- task: VSTest@2
+  displayName: 'Run tests'
+  inputs:
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifacts'
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
