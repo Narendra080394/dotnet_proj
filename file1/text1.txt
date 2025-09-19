@@ -1,5 +1,0 @@
-my name is narendra
-created by 1st time of this mnthe
-
-git branch --set-upstream-to origin/main main
-git pull origin main --allow-unrelated-histories
